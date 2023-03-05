@@ -24,16 +24,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TodayMatchesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-    private final List<MainActivity.ItemType> items = new ArrayList<>();
+    private final List<LiveScoreActivity.ItemType> items = new ArrayList<>();
     private Context context;
+    private Callback callback;
 
     public TodayMatchesAdapter(Context context) {
         this.context = context;
     }
 
-    public void addItems(List<MainActivity.ItemType> items) {
+    public void addItems(List<LiveScoreActivity.ItemType> items) {
         this.items.addAll(items);
         notifyDataSetChanged();
+    }
+
+    public void setOnClickCallback(Callback callback) {
+        this.callback = callback;
     }
 
     @Override
@@ -60,7 +65,7 @@ public class TodayMatchesAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         if (items.get(position).getItemType() == 0) {
-            MainActivity.CompetitionMatchModel competition = (MainActivity.CompetitionMatchModel) items.get(position);
+            LiveScoreActivity.CompetitionMatchModel competition = (LiveScoreActivity.CompetitionMatchModel) items.get(position);
             CompetitionMatchViewHolder viewHolder = (CompetitionMatchViewHolder) holder;
             if (competition.getPersianName() != null) {
                 viewHolder.binding.tvCompetitionName.setText(competition.getPersianName());
@@ -72,7 +77,10 @@ public class TodayMatchesAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             ((CompetitionMatchViewHolder) holder).binding.imgLogo.setImageURI(uri);
         } else if (items.get(position).getItemType() == 1) {
             MatchViewHolder viewHolder = (MatchViewHolder) holder;
-            MainActivity.MatchModel match = (MainActivity.MatchModel) items.get(position);
+            LiveScoreActivity.MatchModel match = (LiveScoreActivity.MatchModel) items.get(position);
+            if (callback != null) {
+                viewHolder.itemView.setOnClickListener(v -> callback.onMatchClick(match));
+            }
             viewHolder.binding.tvAwayTeamName.setTypeface(ResourcesCompat.getFont(viewHolder.itemView.getContext(), R.font.vazir_light));
             viewHolder.binding.tvHomeTeamName.setTypeface(ResourcesCompat.getFont(viewHolder.itemView.getContext(), R.font.vazir_light));
             viewHolder.binding.tvStatus.setTypeface(ResourcesCompat.getFont(viewHolder.itemView.getContext(), R.font.vazir_light));
@@ -92,7 +100,7 @@ public class TodayMatchesAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             }
 
             if (match.getMatchStarted() == false && (match.getMatchEnded() == false || match.getMatchEnded() == true)) {
-                viewHolder.binding.tvStatus.setVisibility(View.GONE);
+                viewHolder.binding.tvStatus.setVisibility(View.INVISIBLE);
                 ViewKt.updateLayoutParams(viewHolder.binding.tvStatus, layoutParams -> {
                     ((ConstraintLayout.LayoutParams) layoutParams).topMargin = (int) dpToPx(8f);
                     return null;
@@ -149,5 +157,9 @@ public class TodayMatchesAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             super(itemView);
             binding = ItemMatchBinding.bind(itemView);
         }
+    }
+
+    interface Callback {
+        void onMatchClick(LiveScoreActivity.MatchModel matchModel);
     }
 }

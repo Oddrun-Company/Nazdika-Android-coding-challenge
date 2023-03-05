@@ -1,6 +1,8 @@
 package com.nazdika.code.challenge
 
+import android.content.Intent
 import android.os.Bundle
+import android.os.Parcelable
 import android.provider.Settings
 import android.view.View
 import android.widget.Toast
@@ -9,9 +11,10 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.gson.GsonBuilder
 import com.google.gson.annotations.SerializedName
-import com.nazdika.code.challenge.databinding.ActivityMainBinding
+import com.nazdika.code.challenge.databinding.ActivityLiveScoreBinding
 import java.io.IOException
 import java.util.*
+import kotlinx.parcelize.Parcelize
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.OkHttpClient
@@ -20,24 +23,29 @@ import okhttp3.Response
 import okhttp3.logging.HttpLoggingInterceptor
 import kotlin.concurrent.thread
 
-class MainActivity : AppCompatActivity() {
+class LiveScoreActivity : AppCompatActivity() {
     private lateinit var androidId: String
     private val okHttpClient = OkHttpClient.Builder()
         .addInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY))
         .build()
     private lateinit var todayMatchesRequest: Request
-    private lateinit var binding: ActivityMainBinding
+    private lateinit var binding: ActivityLiveScoreBinding
     private lateinit var todayMatchesAdapter: TodayMatchesAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityMainBinding.inflate(layoutInflater)
+        binding = ActivityLiveScoreBinding.inflate(layoutInflater)
         setContentView(binding.root)
         todayMatchesAdapter = TodayMatchesAdapter(applicationContext)
         binding.rvTodayMatches.layoutManager =
             LinearLayoutManager(this, RecyclerView.VERTICAL, false)
         binding.rvTodayMatches.adapter = todayMatchesAdapter
         androidId = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
+        todayMatchesAdapter.setOnClickCallback {
+            val intent = Intent(this,DetailActivity::class.java)
+            intent.putExtra("match", it)
+            startActivity(intent)
+        }
         todayMatchesRequest = Request.Builder()
             .url("https://api.nazdika.com/v2/foot/match/live")
             .get()
@@ -50,7 +58,11 @@ class MainActivity : AppCompatActivity() {
                     call.cancel()
                     runOnUiThread {
                         binding.progressbar.visibility = View.GONE
-                        Toast.makeText(this@MainActivity, e.localizedMessage, Toast.LENGTH_LONG)
+                        Toast.makeText(
+                            this@LiveScoreActivity,
+                            e.localizedMessage,
+                            Toast.LENGTH_LONG
+                        )
                             .show()
                     }
                 }
@@ -94,6 +106,12 @@ class MainActivity : AppCompatActivity() {
                 )
                 addAll(competitionMatch?.matches?.map {
                     MatchModel(
+                        CompetitionMatchModel(
+                            competitionMatch?.competitionId,
+                            competitionMatch?.persianName,
+                            competitionMatch?.logo,
+                            competitionMatch?.localizedName
+                        ),
                         it.matchId,
                         it.homeTeamScore,
                         it.awayTeamScore,
@@ -211,15 +229,18 @@ class MainActivity : AppCompatActivity() {
         val itemType: Int
     }
 
+    @Parcelize
     data class CompetitionMatchModel(
         val competitionId: Int? = null,
         val persianName: String? = null,
         val logo: String? = null,
         val localizedName: String? = null,
         override val itemType: Int = 0
-    ) : ItemType
+    ) : ItemType, Parcelable
 
+    @Parcelize
     data class MatchModel(
+        val competition: CompetitionMatchModel? = null,
         val matchId: Long? = null,
         val homeTeamScore: Int? = null,
         val awayTeamScore: Int? = null,
@@ -237,13 +258,14 @@ class MainActivity : AppCompatActivity() {
         val homeTeam: TeamModel? = null,
         val awayTeam: TeamModel? = null,
         override val itemType: Int = 1
-    ) : ItemType
+    ) : ItemType, Parcelable
 
+    @Parcelize
     data class TeamModel(
         val teamId: Long? = null,
         val englishName: String? = null,
         val persianName: String? = null,
         val logo: String? = null,
         val localizedName: String? = null
-    )
+    ) : Parcelable
 }
