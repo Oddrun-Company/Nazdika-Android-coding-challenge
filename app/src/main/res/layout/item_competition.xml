@@ -3,7 +3,12 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="16dp">
+    android:layout_marginLeft="8dp"
+    android:layout_marginTop="4dp"
+    android:layout_marginRight="8dp"
+    android:layout_marginBottom="4dp"
+    android:background="@color/white"
+    android:padding="8dp">
 
     <com.facebook.drawee.view.SimpleDraweeView
         android:id="@+id/imgLogo"
@@ -20,7 +25,7 @@
         android:layout_marginRight="8dp"
         android:gravity="right"
         android:textColor="#FF7D8E99"
-        android:textSize="18sp"
+        android:textSize="14sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toLeftOf="@id/imgLogo"

@@ -3,6 +3,9 @@ package com.nazdika.code.challenge;
 import android.content.Context;
 import android.content.res.Resources;
 import android.net.Uri;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
+import android.text.style.ForegroundColorSpan;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -72,6 +75,8 @@ public class TodayMatchesAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             MainActivity.MatchModel match = (MainActivity.MatchModel) items.get(position);
             viewHolder.binding.tvAwayTeamName.setTypeface(ResourcesCompat.getFont(viewHolder.itemView.getContext(), R.font.vazir_light));
             viewHolder.binding.tvHomeTeamName.setTypeface(ResourcesCompat.getFont(viewHolder.itemView.getContext(), R.font.vazir_light));
+            viewHolder.binding.tvStatus.setTypeface(ResourcesCompat.getFont(viewHolder.itemView.getContext(), R.font.vazir_light));
+            viewHolder.binding.tvScores.setTypeface(ResourcesCompat.getFont(viewHolder.itemView.getContext(), R.font.vazir_light));
             viewHolder.binding.imgAwayTemLogo.setImageURI(Uri.parse(match.getAwayTeam().getLogo()));
             viewHolder.binding.imgHomeTeamLogo.setImageURI(Uri.parse(match.getHomeTeam().getLogo()));
             if (match.getHomeTeam().getPersianName() != null) {
@@ -96,6 +101,20 @@ public class TodayMatchesAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                 viewHolder.binding.tvScores.setTextColor(context.getResources().getColor(R.color.gray));
             } else {
                 viewHolder.binding.tvStatus.setVisibility(View.VISIBLE);
+                SpannableStringBuilder scores = new SpannableStringBuilder();
+                if (match.getAwayTeamPen() >= 0) {
+                    scores.append("(").append(String.valueOf(match.getAwayTeamPen())).append(")");
+                    scores.setSpan(new ForegroundColorSpan(context.getResources().getColor(R.color.gray)), 0, scores.length(), Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
+                    scores.append(" ");
+                    scores.append(" ");
+                }
+                scores.append(String.valueOf(match.getAwayTeamScore())).append(" - ").append(String.valueOf(match.getHomeTeamScore()));
+                if (match.getHomeTeamPen() >= 0) {
+                    SpannableStringBuilder homePen = scores.append("  ").append("(").append(String.valueOf(match.getAwayTeamPen())).append(")");
+                    scores.setSpan(new ForegroundColorSpan(context.getResources().getColor(R.color.gray)), homePen.length(), scores.length(), Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
+                }
+                viewHolder.binding.tvScores.setText(scores);
+                viewHolder.binding.tvStatus.setText(match.getStatus());
             }
         }
     }
