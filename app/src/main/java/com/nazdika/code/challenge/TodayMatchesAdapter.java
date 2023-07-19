@@ -73,8 +73,12 @@ public class TodayMatchesAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                 viewHolder.binding.tvCompetitionName.setText(competition.getLocalizedName());
             }
             viewHolder.binding.tvCompetitionName.setTypeface(ResourcesCompat.getFont(viewHolder.itemView.getContext(), R.font.vazir_medium));
-            Uri uri = Uri.parse(competition.getLogo());
-            ((CompetitionMatchViewHolder) holder).binding.imgLogo.setImageURI(uri);
+            if (competition.getLogo() != null) {
+                Uri uri = Uri.parse(competition.getLogo());
+                ((CompetitionMatchViewHolder) holder).binding.imgLogo.setImageURI(uri);
+            } else {
+                ((CompetitionMatchViewHolder) holder).binding.imgLogo.setVisibility(View.GONE);
+            }
         } else if (items.get(position).getItemType() == 1) {
             MatchViewHolder viewHolder = (MatchViewHolder) holder;
             LiveScoreActivity.MatchModel match = (LiveScoreActivity.MatchModel) items.get(position);
